@@ -20,12 +20,7 @@ const baseIcon = new L.Icon({
   iconSize: [35, 35],
 });
 
-export default function MapView({
-  sites,
-  userLocation,
-  selectedSite,
-  setSelectedSite,
-}) {
+export default function MapView({ sites, userLocation, onSelectSite }) {
   if (!userLocation) return <p>GPS kutilmoqda...</p>;
 
   const { BaseLayer } = LayersControl;
@@ -38,15 +33,11 @@ export default function MapView({
     >
       <LayersControl position="topright">
         <BaseLayer checked name="Oddiy xarita">
-          <TileLayer url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}" />
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         </BaseLayer>
 
-        <BaseLayer name="Sput Mikki (Satellite)">
-          <TileLayer
-            url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
-            maxZoom={20}
-            attribution="Google Satellite"
-          />
+        <BaseLayer name="Satellite">
+          <TileLayer url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}" />
         </BaseLayer>
       </LayersControl>
 
@@ -55,26 +46,19 @@ export default function MapView({
         <Popup>Sizning joylashuvingiz</Popup>
       </Marker>
 
-      {/* Baza markerlari */}
-      {sites.map((s) => (
+      {/* Amaliyot bazalari */}
+      {sites.map((site) => (
         <Marker
-          key={s.id}
-          position={[s.lat, s.lng]}
+          key={site.id}
+          position={[site.lat, site.lng]}
           icon={baseIcon}
-          eventHandlers={{ click: () => setSelectedSite(s) }}
+          eventHandlers={{
+            click: () => onSelectSite(site),
+          }}
         >
-          <Popup>{s.name}</Popup>
+          <Popup>{site.name}</Popup>
         </Marker>
       ))}
-
-      {/* Radius */}
-      {selectedSite && (
-        <Circle
-          center={[selectedSite.lat, selectedSite.lng]}
-          radius={10}
-          pathOptions={{ color: "green", fillColor: "green" }}
-        />
-      )}
     </MapContainer>
   );
 }

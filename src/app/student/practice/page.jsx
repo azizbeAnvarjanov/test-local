@@ -16,28 +16,24 @@ export default function PracticePage() {
   const [distance, setDistance] = useState(null);
   const [openAttendance, setOpenAttendance] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
-  const student_id = "014e065e-6bce-4c80-944e-3a3367efa840"; // TODO: Auth’dan real student ID olib qo’ying
+  const student_id = "014e065e-6bce-4c80-944e-3a3367efa840";
 
   useEffect(() => {
-    // Amaliyot bazalarini olish
     supabase
       .from("intern_sites")
       .select("*")
       .then((res) => setSites(res.data || []));
 
-    // Ochilgan check-in bor yoki yo'qligini ko'rish
     supabase
       .from("practice_attendance")
       .select("*")
       .eq("student_id", student_id)
       .is("check_out", null)
       .single()
-      .then((res) => {
-        setOpenAttendance(res.data || null);
-      });
+      .then((res) => setOpenAttendance(res.data || null));
 
-    // GPS kuzatuv
     navigator.geolocation.watchPosition(
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -56,54 +52,27 @@ export default function PracticePage() {
     );
   }, [selectedSite]);
 
-  // ⬇⬇⬇ CHECK IN FUNKSIYASI
-  const handleCheckIn = async () => {
-    if (!selectedSite) return alert("Baza tanlanmagan");
-    if (!userLocation) return alert("GPS aniqlanmayapti");
+  // GOOGLE MAPS ROUTE
+  const openGoogleMaps = () => {
+    if (!userLocation || !selectedSite) return;
 
-    if (distance > 10) {
-      return alert("📍 Siz amaliyot bazasidan 10 metr uzoqdasiz!");
-    }
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${selectedSite.lat},${selectedSite.lng}&travelmode=driving`;
 
-    setLoading(true);
-
-    const { error } = await supabase.from("practice_attendance").insert({
-      student_id,
-      site_id: selectedSite.id,
-      check_in: new Date().toISOString(),
-    });
-
-    setLoading(false);
-
-    if (error) return alert("Xatolik: kirish yozilmadi" + error);
-
-    alert("✔ Amaliyotga kirishingiz qayd etildi!");
-    window.location.reload();
+    window.location.href = url;
   };
 
-  // ⬇⬇⬇ CHECK OUT FUNKSIYASI
-  const handleCheckOut = async () => {
-    if (!openAttendance) return alert("Hozirgi amaliyot yo'q");
+  // YANDEX ROUTE
+  const openYandexMaps = () => {
+    if (!userLocation || !selectedSite) return;
 
-    if (distance > 10) {
-      return alert("📍 Chiqish uchun bazaga 10 metr ichida bo‘ling!");
-    }
+    const mobileUrl = `yandexmaps://maps.yandex.ru/?rtext=${userLocation.lat},${userLocation.lng}~${selectedSite.lat},${selectedSite.lng}&rtt=auto`;
+    const webUrl = `https://yandex.com/maps/?rtext=${userLocation.lat},${userLocation.lng}~${selectedSite.lat},${selectedSite.lng}&rtt=auto`;
 
-    setLoading(true);
-
-    const { error } = await supabase
-      .from("practice_attendance")
-      .update({
-        check_out: new Date().toISOString(),
-      })
-      .eq("id", openAttendance.id);
-
-    setLoading(false);
-
-    if (error) return alert("Xatolik: chiqish yozilmadi" + error);
-
-    alert("✔ Amaliyotdan chiqish qayd etildi!");
-    window.location.reload();
+    // Mobilga o‘tmasa — web versiyani ochadi
+    window.location.href = mobileUrl;
+    setTimeout(() => {
+      window.location.href = webUrl;
+    }, 500);
   };
 
   return (
@@ -113,9 +82,45 @@ export default function PracticePage() {
       <MapView
         sites={sites}
         userLocation={userLocation}
-        selectedSite={selectedSite}
-        setSelectedSite={setSelectedSite}
+        onSelectSite={(site) => {
+          setSelectedSite(site);
+          setOpenDialog(true);
+        }}
       />
+
+      {/* DIALOG */}
+      {openDialog && selectedSite && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-5 rounded-md w-80 shadow-xl">
+            <h2 className="text-lg font-bold mb-2">{selectedSite.name}</h2>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Bu amaliyot bazasiga borishni xohlaysizmi?
+            </p>
+
+            <button
+              className="w-full bg-blue-600 text-white py-2 rounded mb-2"
+              onClick={openGoogleMaps}
+            >
+              Google Maps orqali borish
+            </button>
+
+            <button
+              className="w-full bg-yellow-500 text-white py-2 rounded mb-2"
+              onClick={openYandexMaps}
+            >
+              Yandex Maps orqali borish
+            </button>
+
+            <button
+              className="w-full bg-gray-300 py-2 rounded"
+              onClick={() => setOpenDialog(false)}
+            >
+              Bekor qilish
+            </button>
+          </div>
+        </div>
+      )}
 
       {selectedSite && (
         <div className="p-3 mt-4 border rounded">
@@ -125,24 +130,6 @@ export default function PracticePage() {
           <p>Masofa: {distance ? distance + " metr" : "aniqlanmoqda..."}</p>
         </div>
       )}
-
-      <div className="flex gap-3 mt-4">
-        <button
-          onClick={handleCheckIn}
-          disabled={loading}
-          className="px-4 py-2 bg-green-600 text-white rounded"
-        >
-          Check In
-        </button>
-
-        <button
-          onClick={handleCheckOut}
-          disabled={loading}
-          className="px-4 py-2 bg-red-600 text-white rounded"
-        >
-          Check Out
-        </button>
-      </div>
     </div>
   );
 }
