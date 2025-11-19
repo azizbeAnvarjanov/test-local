@@ -1,6 +1,13 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Circle, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Circle,
+  Popup,
+  LayersControl,
+} from "react-leaflet";
 import L from "leaflet";
 
 const userIcon = new L.Icon({
@@ -21,20 +28,34 @@ export default function MapView({
 }) {
   if (!userLocation) return <p>GPS kutilmoqda...</p>;
 
+  const { BaseLayer } = LayersControl;
+
   return (
     <MapContainer
       center={[userLocation.lat, userLocation.lng]}
-      zoom={17}
+      zoom={18}
       style={{ height: "500px", width: "100%" }}
     >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <LayersControl position="topright">
+        <BaseLayer checked name="Oddiy xarita">
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        </BaseLayer>
 
-      {/* Talabaning joylashuvi */}
+        <BaseLayer name="Sput Mikki (Satellite)">
+          <TileLayer
+            url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+            maxZoom={20}
+            attribution="Google Satellite"
+          />
+        </BaseLayer>
+      </LayersControl>
+
+      {/* Talaba joylashuvi */}
       <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
         <Popup>Sizning joylashuvingiz</Popup>
       </Marker>
 
-      {/* Amaliyot bazalari */}
+      {/* Baza markerlari */}
       {sites.map((s) => (
         <Marker
           key={s.id}
@@ -46,7 +67,7 @@ export default function MapView({
         </Marker>
       ))}
 
-      {/* 10 metr radius */}
+      {/* Radius */}
       {selectedSite && (
         <Circle
           center={[selectedSite.lat, selectedSite.lng]}
