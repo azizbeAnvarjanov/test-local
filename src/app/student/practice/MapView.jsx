@@ -38,7 +38,7 @@ export default function MapView({
     >
       <LayersControl position="topright">
         <BaseLayer checked name="Oddiy xarita">
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}" />
         </BaseLayer>
 
         <BaseLayer name="Sput Mikki (Satellite)">

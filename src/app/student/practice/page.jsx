@@ -17,7 +17,7 @@ export default function PracticePage() {
   const [openAttendance, setOpenAttendance] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const student_id = "TEST-STUDENT-ID"; // TODO: Auth’dan real student ID olib qo’ying
+  const student_id = "014e065e-6bce-4c80-944e-3a3367efa840"; // TODO: Auth’dan real student ID olib qo’ying
 
   useEffect(() => {
     // Amaliyot bazalarini olish
@@ -75,7 +75,7 @@ export default function PracticePage() {
 
     setLoading(false);
 
-    if (error) return alert("Xatolik: kirish yozilmadi");
+    if (error) return alert("Xatolik: kirish yozilmadi" + error);
 
     alert("✔ Amaliyotga kirishingiz qayd etildi!");
     window.location.reload();
@@ -100,7 +100,7 @@ export default function PracticePage() {
 
     setLoading(false);
 
-    if (error) return alert("Xatolik: chiqish yozilmadi");
+    if (error) return alert("Xatolik: chiqish yozilmadi" + error);
 
     alert("✔ Amaliyotdan chiqish qayd etildi!");
     window.location.reload();
