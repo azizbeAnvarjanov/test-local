@@ -75,6 +75,23 @@ export default function PracticePage() {
     }, 500);
   };
 
+  const openYandexNavigator = () => {
+    if (!userLocation || !selectedSite) return;
+
+    const navigatorUrl = `yandexnavi://build_route_on_map?lat_from=${userLocation.lat}&lon_from=${userLocation.lng}&lat_to=${selectedSite.lat}&lon_to=${selectedSite.lng}`;
+
+    const fallbackUrl = `https://yandex.com/maps/?rtext=${userLocation.lat},${userLocation.lng}~${selectedSite.lat},${selectedSite.lng}&rtt=auto`;
+
+    // Avval Navigator app’ga urinamiz
+    window.location.href = navigatorUrl;
+
+    // Agar telefonda navigator bo‘lmasa → web versiya ochiladi (0.5 sekunddan keyin)
+    setTimeout(() => {
+      window.location.href = fallbackUrl;
+    }, 500);
+  };
+
+
   return (
     <div className="p-4">
       <h1 className="text-xl mb-3">Amaliyot – GPS bilan kirish/chiqish</h1>
@@ -110,6 +127,13 @@ export default function PracticePage() {
               onClick={openYandexMaps}
             >
               Yandex Maps orqali borish
+            </button>
+            
+            <button
+              className="w-full bg-green-500 text-white py-2 rounded mb-2"
+              onClick={openYandexNavigator}
+            >
+              Yandex Navigator orqali borish
             </button>
 
             <button
